@@ -1,0 +1,10 @@
+,control,control+scarf,control+scarf_ae,mixup,mixup+scarf,mixup+scarf_ae,label_smooth,label_smooth+scarf,label_smooth+scarf_ae
+control,,,,,,,,,
+control+scarf,,,,,,,,,
+control+scarf_ae,,,,,,,,,
+mixup,,,,,,,,,
+mixup+scarf,,,,,,,,,
+mixup+scarf_ae,,,,,,,,,
+label_smooth,,,,,,,,,
+label_smooth+scarf,,,,,,,,,
+label_smooth+scarf_ae,,,,,,,,,

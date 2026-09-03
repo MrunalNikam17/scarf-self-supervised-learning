@@ -17,6 +17,7 @@ import pandas as pd
 from sklearn.datasets import load_breast_cancer, load_wine, load_digits
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scarf"))
 
 from scarf.baselines import pretrain_autoencoder, pretrain_scarf_discriminative
 from scarf.data import preprocess_dataset

@@ -164,6 +164,8 @@ def finetune_classifier(
     patience: int = 3,
     label_smoothing: float = 0.0,
     mixup_alpha: Optional[float] = None,
+    dropout_rate: float = 0.0,
+    loss_fn: Optional[nn.Module] = None,
     device: str = "cpu",
     verbose: bool = False,
 ) -> tuple[Encoder, ClassificationHead, TrainHistory]:
@@ -172,8 +174,9 @@ def finetune_classifier(
     early-stopping on validation classification error.
 
     Set `encoder=None` to train from a randomly-initialized encoder (the
-    "control" baseline). Set `mixup_alpha` to enable mixup, or
-    `label_smoothing` > 0 to enable label smoothing.
+    "control" baseline). Set `mixup_alpha` to enable mixup, `label_smoothing` > 0
+    to enable label smoothing, `dropout_rate` > 0 for dropout on all layers,
+    or `loss_fn` to supply a custom loss (e.g. BiTemperedLogisticLoss).
     """
     x_train_t = torch.as_tensor(x_train, dtype=torch.float32, device=device)
     y_train_t = torch.as_tensor(y_train, dtype=torch.long, device=device)
@@ -182,9 +185,14 @@ def finetune_classifier(
 
     if encoder is None:
         assert input_dim is not None, "input_dim required when encoder is None"
-        encoder = Encoder(input_dim, hidden_dim, encoder_layers)
+        encoder = Encoder(input_dim, hidden_dim, encoder_layers, dropout_rate=dropout_rate)
+    elif dropout_rate > 0:
+        for m in encoder.modules():
+            if isinstance(m, nn.Dropout):
+                m.p = dropout_rate
+
     encoder = encoder.to(device)
-    head = ClassificationHead(encoder.output_dim, hidden_dim, n_classes, head_layers).to(device)
+    head = ClassificationHead(encoder.output_dim, hidden_dim, n_classes, head_layers, dropout_rate=dropout_rate).to(device)
 
     optimizer = torch.optim.Adam(list(encoder.parameters()) + list(head.parameters()), lr=lr)
 
@@ -204,7 +212,10 @@ def finetune_classifier(
             xb = x_train_t[batch_idx]
             yb = y_train_t[batch_idx]
 
-            if mixup_alpha is not None and mixup_alpha > 0 and xb.shape[0] > 1:
+            if loss_fn is not None:
+                logits = head(encoder(xb))
+                loss = loss_fn(logits, yb)
+            elif mixup_alpha is not None and mixup_alpha > 0 and xb.shape[0] > 1:
                 lam = np.random.beta(mixup_alpha, mixup_alpha)
                 shuffle = torch.randperm(xb.shape[0], device=device)
                 xb_mixed = lam * xb + (1 - lam) * xb[shuffle]
