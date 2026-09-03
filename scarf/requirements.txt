@@ -1,0 +1,6 @@
+torch>=2.0
+scikit-learn>=1.2
+pandas>=1.5
+numpy>=1.23
+scipy>=1.9
+openml>=0.14      # only needed for scripts/run_benchmark.py (real OpenML-CC18)
