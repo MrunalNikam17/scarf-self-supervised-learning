@@ -1,0 +1,13 @@
+ablation,dataset,variant,mean_acc,std_acc,n_trials
+alternative_losses,glass,align_uniform,0.5757575631141663,0.021427457782938527,3
+alternative_losses,pima-diabetes,align_uniform,0.7705627679824829,0.02390769119650425,3
+alternative_losses,sonar,align_uniform,0.738095243771871,0.0336717354291314,3
+alternative_losses,wine,align_uniform,0.9629629453023275,0.01309457626595066,3
+alternative_losses,glass,barlow,0.5227272709210714,0.032141214772306796,3
+alternative_losses,pima-diabetes,barlow,0.761904756228129,0.011036815445750884,3
+alternative_losses,sonar,barlow,0.8253968159357706,0.05611959651241768,3
+alternative_losses,wine,barlow,0.9722222089767456,0.02268047139621209,3
+alternative_losses,glass,infonce,0.5530303021272024,0.07725788930644724,3
+alternative_losses,pima-diabetes,infonce,0.7748917738596598,0.04118245720421804,3
+alternative_losses,sonar,infonce,0.8095238208770752,0.038880787250511306,3
+alternative_losses,wine,infonce,0.9259259303410848,0.013094548168051652,3

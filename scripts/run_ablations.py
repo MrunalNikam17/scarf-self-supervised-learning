@@ -296,6 +296,8 @@ def main():
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args()
 
+    if not os.path.isabs(args.output_dir):
+        args.output_dir = os.path.join(os.path.dirname(HERE), args.output_dir)
     os.makedirs(args.output_dir, exist_ok=True)
 
     # Pre-generate dataset splits across scalings and trials
