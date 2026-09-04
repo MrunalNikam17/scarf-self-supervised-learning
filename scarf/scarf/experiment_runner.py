@@ -44,11 +44,19 @@ LABEL_NOISE_REFERENCE_METHODS: List[str] = [
 ]
 
 
+def _encoder_checksum(encoder: Optional[Encoder]) -> float:
+    """Compute a floating point checksum of encoder parameters."""
+    if encoder is None:
+        return 0.0
+    return float(sum(p.sum().item() for p in encoder.parameters()))
+
+
 def _clone_encoder(encoder: Optional[Encoder]) -> Optional[Encoder]:
     """Return an independent deep copy of the encoder weights, or None."""
     if encoder is None:
         return None
     return copy.deepcopy(encoder)
+
 
 
 def get_pretrained_encoder(
@@ -236,16 +244,30 @@ def run_all_combinations(
     # Pre-train once per method, then reuse (via cloning) across every
     # reference fine-tuning recipe -- avoids redundant pre-training work.
     pretrained: Dict[str, Optional[Encoder]] = {}
+    initial_checksums: Dict[str, float] = {}
     for pm in pretrain_methods:
-        pretrained[pm] = get_pretrained_encoder(
+        enc_pm = get_pretrained_encoder(
             pm, x_pretrain, x_val, input_dim, device, max_pretrain_epochs
         )
+        pretrained[pm] = enc_pm
+        initial_checksums[pm] = _encoder_checksum(enc_pm)
 
     results: Dict[str, float] = {}
     for ref_name, ref_kwargs in ref_dict.items():
         for pm in pretrain_methods:
+            # Verify cached pre-trained encoder has not drifted
+            cached_sum = _encoder_checksum(pretrained[pm])
+            assert abs(cached_sum - initial_checksums[pm]) < 1e-6, (
+                f"State leak detected: cached encoder for {pm} mutated! "
+                f"Expected {initial_checksums[pm]}, got {cached_sum}"
+            )
             # Each fine-tune recipe starts fresh from the cached pre-trained weights
             encoder_copy = _clone_encoder(pretrained[pm])
+            copy_sum = _encoder_checksum(encoder_copy)
+            assert abs(copy_sum - initial_checksums[pm]) < 1e-6, (
+                f"State leak detected: cloned copy for {ref_name}+{pm} differs from cached! "
+                f"Expected {initial_checksums[pm]}, got {copy_sum}"
+            )
             enc, head = _train_reference_model(
                 ref_name=ref_name,
                 x_train_ft=x_train_ft,

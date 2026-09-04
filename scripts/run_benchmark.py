@@ -166,18 +166,24 @@ def run_benchmark_for_setting(
 
         print(f"  Dataset total: {time.time()-t_d:.1f}s")
 
-    _save_and_report_setting(results, setting_dir, pretrain_methods, reference_methods)
+    _save_and_report_setting(results, setting_dir, pretrain_methods, reference_methods, root_dir=output_dir)
     return results
 
 
-def _save_and_report_setting(results, out_dir, pretrain_methods, reference_methods):
+def _save_and_report_setting(results, out_dir, pretrain_methods, reference_methods, root_dir=None):
     results_np = {m: {d: np.array(v) for d, v in dd.items()} for m, dd in results.items()}
 
-    with open(os.path.join(out_dir, "raw_results.json"), "w") as f:
-        json.dump(
-            {m: {d: v.tolist() for d, v in dd.items()} for m, dd in results_np.items()},
-            f, indent=2,
-        )
+    dirs_to_save = [out_dir]
+    if root_dir and os.path.abspath(root_dir) != os.path.abspath(out_dir):
+        dirs_to_save.append(root_dir)
+
+    for d in dirs_to_save:
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "raw_results.json"), "w") as f:
+            json.dump(
+                {m: {ds: v.tolist() for ds, v in dd.items()} for m, dd in results_np.items()},
+                f, indent=2,
+            )
 
     rows = []
     for method, dd in results_np.items():
@@ -187,22 +193,47 @@ def _save_and_report_setting(results, out_dir, pretrain_methods, reference_metho
                 "mean_acc": accs.mean(), "std_acc": accs.std(), "n_trials": len(accs),
             })
     summary = pd.DataFrame(rows).sort_values(["dataset", "method"])
-    summary.to_csv(os.path.join(out_dir, "summary.csv"), index=False)
+    for d in dirs_to_save:
+        summary.to_csv(os.path.join(d, "summary.csv"), index=False)
     print("\n" + summary.to_string(index=False))
 
     wm = win_matrix(results_np)
-    wm.to_csv(os.path.join(out_dir, "win_matrix.csv"))
+    for d in dirs_to_save:
+        wm.to_csv(os.path.join(d, "win_matrix.csv"))
     print("\n=== Win matrix ===")
     print(wm)
 
+    active_pretrain = [m for m in pretrain_methods if m != "none"]
     table = average_relative_gain_table(
         results_np,
-        pretrain_methods=[m for m in pretrain_methods if m != "none"],
+        pretrain_methods=active_pretrain,
         reference_methods=reference_methods,
     )
-    table.to_csv(os.path.join(out_dir, "relative_gain_table.csv"))
+    for d in dirs_to_save:
+        table.to_csv(os.path.join(d, "relative_gain_table.csv"))
     print("\n=== Average relative gain (%) vs. reference alone -- Table 1 style ===")
     print(table)
+
+    from scipy import stats
+    print("\n=== Detailed Relative Gain Breakdown (alpha=0.20) ===")
+    for ref in reference_methods:
+        for pt in active_pretrain:
+            combo_key = f"{ref}+{pt}"
+            if ref not in results_np or combo_key not in results_np:
+                continue
+            print(f"\n--- {combo_key} vs {ref} ---")
+            gains = []
+            for ds in sorted(results_np[ref].keys()):
+                acc_m = results_np[combo_key][ds]
+                acc_r = results_np[ref][ds]
+                t, p = stats.ttest_ind(acc_m, acc_r, equal_var=False)
+                diff = 100.0 * (acc_m.mean() - acc_r.mean()) / acc_r.mean() if acc_r.mean() > 0 else 0.0
+                status = "INCLUDED (p < 0.20)" if p < 0.20 else "EXCLUDED (p >= 0.20)"
+                if p < 0.20:
+                    gains.append(diff)
+                print(f"  {ds:25s}: ref={acc_r.mean()*100:5.2f}%, combo={acc_m.mean()*100:5.2f}%, diff={diff:+6.2f}%, p={p:6.4f} -> {status}")
+            avg_g = np.mean(gains) if gains else float('nan')
+            print(f"  Average Relative Gain: {avg_g:.2f}% ({len(gains)}/{len(results_np[ref])} datasets included)")
 
 
 def main():
@@ -212,7 +243,9 @@ def main():
     parser.add_argument("--n-trials", type=int, default=10)
     parser.add_argument("--labeled-frac", type=float, default=0.25)
     parser.add_argument("--noise-frac", type=float, default=0.30)
-    parser.add_argument("--pretrain-methods", nargs="+", default=ALL_PRETRAIN_METHODS, choices=ALL_PRETRAIN_METHODS)
+    parser.add_argument("--methods", nargs="+", default=None,
+                        help="Combined list of methods, e.g. control scarf scarf_ae mixup label_smooth")
+    parser.add_argument("--pretrain-methods", nargs="+", default=None)
     parser.add_argument("--reference-methods", nargs="+", default=None)
     parser.add_argument("--max-pretrain-epochs", type=int, default=200)
     parser.add_argument("--max-finetune-epochs", type=int, default=100)
@@ -221,11 +254,33 @@ def main():
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
+    # Parse methods if provided via --methods
+    pretrain_methods = args.pretrain_methods
+    reference_methods = args.reference_methods
+
+    if args.methods:
+        known_pretrain = {"none", "scarf", "scarf_ae", "no_noise_ae", "add_noise_ae", "scarf_disc"}
+        known_reference = {
+            "control", "dropout", "mixup", "label_smooth", "distill",
+            "self_train", "tri_train", "deep_knn", "bitempered",
+        }
+        parsed_pretrain = [m for m in args.methods if m in known_pretrain]
+        parsed_ref = [m for m in args.methods if m in known_reference]
+        if parsed_pretrain:
+            if "none" not in parsed_pretrain:
+                parsed_pretrain = ["none"] + parsed_pretrain
+            pretrain_methods = parsed_pretrain
+        if parsed_ref:
+            reference_methods = parsed_ref
+
+    if pretrain_methods is None:
+        pretrain_methods = ALL_PRETRAIN_METHODS
+
     settings_to_run = [args.setting] if args.setting != "all" else ["supervised", "semi_supervised", "label_noise"]
 
     for stg in settings_to_run:
-        if args.reference_methods:
-            ref_methods = args.reference_methods
+        if reference_methods:
+            ref_methods = reference_methods
         elif stg == "supervised":
             ref_methods = SUPERVISED_REFERENCE_METHODS
         elif stg == "semi_supervised":
@@ -237,7 +292,7 @@ def main():
             setting=stg,
             dataset_ids=args.dataset_ids,
             n_trials=args.n_trials,
-            pretrain_methods=args.pretrain_methods,
+            pretrain_methods=pretrain_methods,
             reference_methods=ref_methods,
             labeled_frac=args.labeled_frac,
             noise_frac=args.noise_frac,

@@ -1,4 +1,10 @@
-,control,scarf,scarf_ae
-control,,1.0,1.0
-scarf,0.0,,0.0
-scarf_ae,0.0,1.0,
+,control,control+scarf,control+scarf_ae,mixup,mixup+scarf,mixup+scarf_ae,label_smooth,label_smooth+scarf,label_smooth+scarf_ae
+control,,,1.0,,,,,,
+control+scarf,,,1.0,,,,0.5,,0.0
+control+scarf_ae,0.0,0.0,,0.0,,,0.3333333333333333,0.0,
+mixup,,,1.0,,,1.0,,,0.5
+mixup+scarf,,,,,,,,,
+mixup+scarf_ae,,,,0.0,,,0.5,0.0,
+label_smooth,,0.5,0.6666666666666666,,,0.5,,0.0,0.0
+label_smooth+scarf,,,1.0,,,1.0,1.0,,
+label_smooth+scarf_ae,,1.0,,0.5,,,1.0,,
