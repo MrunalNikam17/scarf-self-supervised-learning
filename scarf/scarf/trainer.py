@@ -162,6 +162,7 @@ def finetune_classifier(
     lr: float = 1e-3,
     max_epochs: int = 200,
     patience: int = 3,
+    min_epochs: int = 0,
     label_smoothing: float = 0.0,
     mixup_alpha: Optional[float] = None,
     dropout_rate: float = 0.0,
@@ -177,6 +178,9 @@ def finetune_classifier(
     "control" baseline). Set `mixup_alpha` to enable mixup, `label_smoothing` > 0
     to enable label smoothing, `dropout_rate` > 0 for dropout on all layers,
     or `loss_fn` to supply a custom loss (e.g. BiTemperedLogisticLoss).
+
+    `min_epochs` (default 0): suppresses early stopping until at least `min_epochs`
+    have completed, protecting against premature cutoff during initial warmup plateaus.
     """
     x_train_t = torch.as_tensor(x_train, dtype=torch.float32, device=device)
     y_train_t = torch.as_tensor(y_train, dtype=torch.long, device=device)
@@ -254,9 +258,12 @@ def finetune_classifier(
             history.best_epoch = epoch
             epochs_no_improve = 0
         else:
-            epochs_no_improve += 1
-            if epochs_no_improve >= patience:
-                break
+            if (epoch + 1) >= min_epochs:
+                epochs_no_improve += 1
+                if epochs_no_improve >= patience:
+                    break
+            else:
+                epochs_no_improve = 0
 
     if best_state is not None:
         encoder.load_state_dict(best_state["encoder"])
