@@ -1,9 +1,3 @@
 ablation,dataset,variant,mean_acc,std_acc,n_trials
-validation_metric,glass,earlystop_error,0.560606062412262,0.08570991542545113,3
-validation_metric,pima-diabetes,earlystop_error,0.7510822415351868,0.02720735318402435,3
-validation_metric,sonar,earlystop_error,0.8015873034795126,0.040468410322412614,3
-validation_metric,wine,earlystop_error,0.9259259104728699,0.06547285323185428,3
-validation_metric,glass,earlystop_loss,0.4999999900658925,0.06690726609933646,3
-validation_metric,pima-diabetes,earlystop_loss,0.7792207598686218,0.028055164571867287,3
-validation_metric,sonar,earlystop_loss,0.7301587462425232,0.08093681285186569,3
-validation_metric,wine,earlystop_loss,0.9444444378217062,0.02268044706272211,3
+validation_metric,openml_1489_phonemes,earlystop_loss,0.8598,0.0056,3
+validation_metric,openml_1489_phonemes,earlystop_error,0.8571,0.0056,3

@@ -74,14 +74,34 @@ python scripts/smoke_test.py
 Run the benchmark runner across OpenML datasets:
 
 ```bash
-# Semi-supervised benchmark (25% labeled data)
-python scripts/run_benchmark.py --dataset-ids 11 37 54 1510 1494 15 --n-trials 15 --semi-supervised --labeled-fraction 0.25 --output-dir results_semisup/
+# Semi-supervised benchmark (25% labeled data, 7 reference methods x 3 pretrain methods)
+python scripts/run_benchmark.py \
+    --setting semi_supervised \
+    --dataset-ids 11 37 54 1510 1494 15 \
+    --n-trials 15 \
+    --labeled-frac 0.25 \
+    --pretrain-methods none scarf scarf_ae \
+    --reference-methods control dropout mixup label_smooth distill self_train tri_train \
+    --output-dir results_semisup/
 
 # Fully-supervised benchmark (100% labeled data)
-python scripts/run_benchmark.py --dataset-ids 11 37 54 1510 1494 15 --n-trials 15 --output-dir results_supervised/
+python scripts/run_benchmark.py \
+    --setting supervised \
+    --dataset-ids 11 37 54 1510 1494 15 \
+    --n-trials 15 \
+    --pretrain-methods none scarf scarf_ae \
+    --reference-methods control mixup label_smooth \
+    --output-dir results_supervised/
 
-# Label-noise benchmark (30% label corruption)
-python scripts/run_benchmark.py --dataset-ids 11 37 54 1510 1494 15 --n-trials 15 --label-noise 0.30 --output-dir results_labelnoise/
+# Label-noise benchmark (30% label corruption, 7 reference methods x 3 pretrain methods)
+python scripts/run_benchmark.py \
+    --setting label_noise \
+    --dataset-ids 11 37 54 1510 1494 15 \
+    --n-trials 15 \
+    --noise-frac 0.30 \
+    --pretrain-methods none scarf scarf_ae \
+    --reference-methods control dropout mixup label_smooth distill deep_knn bitempered \
+    --output-dir results_labelnoise/
 ```
 
 ### 4. Ablation Sweeps on Google Colab / GPU
@@ -203,15 +223,95 @@ Evaluated on Phonemes (5,404 rows, 5 features, 3 trials):
 - **Scaling impact**: z-score scaling achieved higher accuracy than min-max scaling across all strategies (+1.5 to +3.6 percentage points).
 - **Strategy performance**: Under z-score, learnable missing-feature embeddings and marginal sampling scored highest (0.8688 and 0.8644), followed by feature dropout (0.8632), Gaussian noise (0.8601), uncorrupted input (0.8592), empirical mean replacement (0.8577), and joint empirical sampling (0.8540).
 
-#### Ablations 2–8: Pending Colab GPU Execution
+#### Ablation 2: Batch Size Sweep
 
-The remaining ablation sweeps on Phonemes (OpenML ID 1489, 3 trials) require dedicated GPU compute and are pending execution:
-- **Ablation 2**: Batch Size Sweep $\{4, 16, 64, 128, 256, 512\}$
-- **Ablation 3**: Corruption Rate Sweep (10% to 90%)
-- **Ablation 4**: Softmax Temperature Sweep $\{0.01, 0.1, 1.0, 10.0\}$
-- **Ablation 5**: Alternative Losses (InfoNCE vs. Barlow Twins vs. Alignment & Uniformity)
-- **Ablations 6 & 7**: Pre-Training vs. Co-Training vs. Data Augmentation
-- **Ablation 8**: Validation Metric for Early Stopping (InfoNCE Loss vs. InfoNCE Error)
+Evaluated across batch sizes $\{4, 16, 64, 128, 256, 512\}$ on Phonemes (3 trials):
+
+| Batch Size | Test Accuracy (Mean ± Std) |
+| :---: | :---: |
+| **4** | 0.8241 ± 0.0273 |
+| **16** | 0.8592 ± 0.0117 |
+| **64** | 0.8571 ± 0.0070 |
+| **128** | 0.8552 ± 0.0059 |
+| **256** | 0.8700 ± 0.0123 |
+| **512** | **0.8718 ± 0.0058** |
+
+- **Highest**: Batch size 512 scored highest (0.8718 ± 0.0058), followed by 256 (0.8700 ± 0.0123).
+- **Lowest**: Batch size 4 scored lowest (0.8241 ± 0.0273).
+
+#### Ablation 3: Corruption Rate Sweep
+
+Evaluated across corruption rates from 10% to 90% in steps of 10% on Phonemes (3 trials):
+
+| Corruption Rate | Test Accuracy (Mean ± Std) |
+| :---: | :---: |
+| **10%** | 0.8552 ± 0.0054 |
+| **20%** | 0.8580 ± 0.0076 |
+| **30%** | **0.8728 ± 0.0081** |
+| **40%** | 0.8577 ± 0.0082 |
+| **50%** | 0.8648 ± 0.0042 |
+| **60%** | 0.8564 ± 0.0086 |
+| **70%** | 0.8595 ± 0.0153 |
+| **80%** | 0.8614 ± 0.0023 |
+| **90%** | 0.8552 ± 0.0050 |
+
+- **Highest**: Corruption rate 30% scored highest (0.8728 ± 0.0081), followed by 50% (0.8648 ± 0.0042) and 80% (0.8614 ± 0.0023).
+- **Lowest**: Rates 10% and 90% tied for the lowest score (both 0.8552).
+
+#### Ablation 4: Softmax Temperature Sweep
+
+Evaluated across temperatures $\{0.01, 0.1, 1.0, 10.0\}$ on Phonemes (3 trials):
+
+| Temperature $\tau$ | Test Accuracy (Mean ± Std) |
+| :---: | :---: |
+| **0.01** | **0.8604 ± 0.0035** |
+| **0.1** | 0.8592 ± 0.0049 |
+| **1.0** | 0.8540 ± 0.0132 |
+| **10.0** | 0.8524 ± 0.0114 |
+
+- **Highest**: Temperature 0.01 scored highest (0.8604 ± 0.0035), followed by 0.1 (0.8592 ± 0.0049).
+- **Lowest**: Temperature 10.0 scored lowest (0.8524 ± 0.0114).
+
+#### Ablation 5: Alternative Losses
+
+Evaluated across contrastive loss objectives on Phonemes (3 trials):
+
+| Loss Function | Test Accuracy (Mean ± Std) |
+| :--- | :---: |
+| **Alignment and Uniformity** ($t=2.0$) | **0.8580 ± 0.0174** |
+| **InfoNCE** ($\tau=1.0$) | 0.8577 ± 0.0054 |
+| **Barlow Twins** ($\lambda=5\times 10^{-3}$) | 0.8552 ± 0.0114 |
+
+- **Highest**: Alignment and Uniformity scored highest (0.8580 ± 0.0174), with InfoNCE close behind (0.8577 ± 0.0054).
+- **Lowest**: Barlow Twins scored lowest (0.8552 ± 0.0114). All three losses scored within 0.003 of each other.
+
+#### Ablations 6 & 7: Pre-Training vs. Co-Training vs. Data Augmentation
+
+Evaluated across training paradigms on Phonemes (3 trials):
+
+| Paradigm / Variant | Test Accuracy (Mean ± Std) |
+| :--- | :---: |
+| **Co-training ($\lambda=0.1$)** | **0.8629 ± 0.0110** |
+| **Pre-trained SCARF** | 0.8561 ± 0.0024 |
+| **Supervised Control** | 0.8524 ± 0.0037 |
+| **Co-training ($\lambda=0.01$)** | 0.8487 ± 0.0127 |
+| **Co-training ($\lambda=1.0$)** | 0.8481 ± 0.0119 |
+| **Data Augmentation Only** | 0.7671 ± 0.0113 |
+
+- **Highest**: Co-training with $\lambda=0.1$ scored highest (0.8629 ± 0.0110), followed by pre-trained SCARF (0.8561 ± 0.0024) and supervised control (0.8524 ± 0.0037).
+- **Lowest**: Direct data augmentation scored lowest by a wide margin (0.7671 ± 0.0113).
+
+#### Ablation 8: Validation Metric for Early Stopping
+
+Evaluated comparing early stopping criteria during pre-training on Phonemes (3 trials):
+
+| Early Stopping Metric | Test Accuracy (Mean ± Std) |
+| :--- | :---: |
+| **Validation InfoNCE Loss** | **0.8598 ± 0.0056** |
+| **Validation InfoNCE Error (argmax)** | 0.8571 ± 0.0056 |
+
+- **Highest**: Validation loss early stopping scored higher (0.8598 ± 0.0056).
+- **Lowest**: Validation error early stopping scored lower (0.8571 ± 0.0056), with both methods performing within 0.003 of each other.
 
 ---
 
