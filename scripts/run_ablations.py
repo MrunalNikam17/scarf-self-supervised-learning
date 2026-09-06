@@ -294,9 +294,15 @@ def main():
     parser.add_argument("--max-finetune-epochs", type=int, default=100)
     parser.add_argument("--dataset-id", type=int, default=1489, help="OpenML dataset ID (default 1489 for Phonemes)")
     parser.add_argument("--output-dir", default="results_ablations")
-    parser.add_argument("--device", default="cpu")
+    parser.add_argument("--device", default="auto", help="Device to run on ('cpu', 'cuda', or 'auto')")
     parser.add_argument("--sweep", default="all", help="Select specific ablation sweep, comma-separated list, or 'all'")
     args = parser.parse_args()
+
+    import torch
+    device = args.device
+    if device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Using device: {device}")
 
     if not os.path.isabs(args.output_dir):
         args.output_dir = os.path.join(os.path.dirname(HERE), args.output_dir)
