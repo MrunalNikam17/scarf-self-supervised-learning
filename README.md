@@ -241,10 +241,6 @@ scarf_project/
 ├── scripts/
 │   ├── run_benchmark.py      # Benchmark runner (supervised, semi-supervised, label noise)
 │   ├── run_ablations.py      # Ablation runner with automatic CUDA detection
-│   └── smoke_test.py         # Offline pipeline test
-├── PROGRESS.md               # Chronological log of experimental runs and configurations
 ├── requirements.txt          # Dependencies
 └── README.md                 # Project documentation and empirical findings
 ```
-
-For the complete chronologically-logged session history and detailed step-by-step experiment outputs, see [**`PROGRESS.md`**](file:///c:/Users/mruna/Downloads/scarf_project/PROGRESS.md).
