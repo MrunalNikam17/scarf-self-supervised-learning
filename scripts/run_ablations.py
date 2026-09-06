@@ -333,7 +333,7 @@ def main():
     if run_all or "corruption" in selected:
         t0 = time.time()
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 1: Corruption Strategies...")
-        res1 = run_corruption_ablation(splits_dict, 0, 0, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        res1 = run_corruption_ablation(splits_dict, 0, 0, args.n_trials, device, args.max_pretrain_epochs, args.max_finetune_epochs)
         _summarize_and_save(res1, os.path.join(args.output_dir, "ablation_corruptions.csv"), "corruption_strategies")
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 1 completed in {time.time() - t0:.2f}s")
 
@@ -341,7 +341,7 @@ def main():
     if run_all or "batch_size" in selected:
         t0 = time.time()
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 2: Batch Size...")
-        res2 = run_batch_size_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        res2 = run_batch_size_ablation(splits_dict, args.n_trials, device, args.max_pretrain_epochs, args.max_finetune_epochs)
         _summarize_and_save(res2, os.path.join(args.output_dir, "ablation_batch_size.csv"), "batch_size")
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 2 completed in {time.time() - t0:.2f}s")
 
@@ -349,7 +349,7 @@ def main():
     if run_all or "corruption_rate" in selected:
         t0 = time.time()
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 3: Corruption Rate...")
-        res3 = run_corruption_rate_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        res3 = run_corruption_rate_ablation(splits_dict, args.n_trials, device, args.max_pretrain_epochs, args.max_finetune_epochs)
         _summarize_and_save(res3, os.path.join(args.output_dir, "ablation_corruption_rate.csv"), "corruption_rate")
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 3 completed in {time.time() - t0:.2f}s")
 
@@ -357,7 +357,7 @@ def main():
     if run_all or "temperature" in selected:
         t0 = time.time()
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 4: Softmax Temperature...")
-        res4 = run_temperature_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        res4 = run_temperature_ablation(splits_dict, args.n_trials, device, args.max_pretrain_epochs, args.max_finetune_epochs)
         _summarize_and_save(res4, os.path.join(args.output_dir, "ablation_temperature.csv"), "temperature")
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 4 completed in {time.time() - t0:.2f}s")
 
@@ -365,7 +365,7 @@ def main():
     if run_all or "losses" in selected:
         t0 = time.time()
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 5: Alternative Losses...")
-        res5 = run_losses_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        res5 = run_losses_ablation(splits_dict, args.n_trials, device, args.max_pretrain_epochs, args.max_finetune_epochs)
         _summarize_and_save(res5, os.path.join(args.output_dir, "ablation_losses.csv"), "alternative_losses")
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 5 completed in {time.time() - t0:.2f}s")
 
@@ -373,7 +373,7 @@ def main():
     if run_all or "cotrain_aug" in selected:
         t0 = time.time()
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 6-7: Co-training & Data Augmentation...")
-        res6 = run_cotrain_and_aug_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        res6 = run_cotrain_and_aug_ablation(splits_dict, args.n_trials, device, args.max_pretrain_epochs, args.max_finetune_epochs)
         _summarize_and_save(res6, os.path.join(args.output_dir, "ablation_cotrain_aug.csv"), "cotrain_and_augmentation")
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 6-7 completed in {time.time() - t0:.2f}s")
 
@@ -381,7 +381,7 @@ def main():
     if run_all or "val_metric" in selected:
         t0 = time.time()
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 8: Validation Metric...")
-        res7 = run_val_metric_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        res7 = run_val_metric_ablation(splits_dict, args.n_trials, device, args.max_pretrain_epochs, args.max_finetune_epochs)
         _summarize_and_save(res7, os.path.join(args.output_dir, "ablation_val_metric.csv"), "validation_metric")
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 8 completed in {time.time() - t0:.2f}s")
 
