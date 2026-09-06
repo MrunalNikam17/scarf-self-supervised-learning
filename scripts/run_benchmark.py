@@ -20,6 +20,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import sys
@@ -139,6 +140,16 @@ def run_benchmark_for_setting(
             else:
                 raise ValueError(f"Unknown setting: {setting}")
 
+            if isinstance(reference_methods, dict):
+                cur_ref = copy.deepcopy(reference_methods)
+            else:
+                cur_ref = {m: {} for m in reference_methods}
+                if "tri_train" in cur_ref:
+                    cur_ref["tri_train"] = {"n_iterations": 4}
+
+            if setting == "semi_supervised" and trial >= 5 and "tri_train" in cur_ref:
+                del cur_ref["tri_train"]
+
             t0 = time.time()
             trial_results = run_all_combinations(
                 x_pretrain=x_pre,
@@ -154,7 +165,7 @@ def run_benchmark_for_setting(
                 device=device,
                 max_pretrain_epochs=max_pretrain_epochs,
                 max_finetune_epochs=max_finetune_epochs,
-                reference_methods=reference_methods,
+                reference_methods=cur_ref,
                 pretrain_methods=pretrain_methods,
             )
             for k, acc in trial_results.items():
@@ -162,15 +173,17 @@ def run_benchmark_for_setting(
 
             elapsed = time.time() - t0
             summary_str = ", ".join(f"{k}={v:.3f}" for k, v in sorted(trial_results.items())[:4])
-            print(f"  trial {trial+1}/{n_trials} ({elapsed:.1f}s): {summary_str}...")
+            print(f"  trial {trial+1}/{n_trials} ({elapsed:.1f}s): {summary_str}...", flush=True)
 
-        print(f"  Dataset total: {time.time()-t_d:.1f}s")
+        print(f"  Dataset total: {time.time()-t_d:.1f}s", flush=True)
+        # Checkpoint results after each dataset
+        _save_and_report_setting(results, setting_dir, pretrain_methods, reference_methods, root_dir=output_dir, verbose=False)
 
-    _save_and_report_setting(results, setting_dir, pretrain_methods, reference_methods, root_dir=output_dir)
+    _save_and_report_setting(results, setting_dir, pretrain_methods, reference_methods, root_dir=output_dir, verbose=True)
     return results
 
 
-def _save_and_report_setting(results, out_dir, pretrain_methods, reference_methods, root_dir=None):
+def _save_and_report_setting(results, out_dir, pretrain_methods, reference_methods, root_dir=None, verbose=True):
     results_np = {m: {d: np.array(v) for d, v in dd.items()} for m, dd in results.items()}
 
     dirs_to_save = [out_dir]
@@ -195,28 +208,35 @@ def _save_and_report_setting(results, out_dir, pretrain_methods, reference_metho
     summary = pd.DataFrame(rows).sort_values(["dataset", "method"])
     for d in dirs_to_save:
         summary.to_csv(os.path.join(d, "summary.csv"), index=False)
-    print("\n" + summary.to_string(index=False))
+    if verbose:
+        print("\n" + summary.to_string(index=False), flush=True)
 
     wm = win_matrix(results_np)
     for d in dirs_to_save:
         wm.to_csv(os.path.join(d, "win_matrix.csv"))
-    print("\n=== Win matrix ===")
-    print(wm)
+    if verbose:
+        print("\n=== Win matrix ===", flush=True)
+        print(wm, flush=True)
 
     active_pretrain = [m for m in pretrain_methods if m != "none"]
+    ref_list = list(reference_methods.keys()) if isinstance(reference_methods, dict) else list(reference_methods)
     table = average_relative_gain_table(
         results_np,
         pretrain_methods=active_pretrain,
-        reference_methods=reference_methods,
+        reference_methods=ref_list,
     )
     for d in dirs_to_save:
         table.to_csv(os.path.join(d, "relative_gain_table.csv"))
-    print("\n=== Average relative gain (%) vs. reference alone -- Table 1 style ===")
-    print(table)
+    if verbose:
+        print("\n=== Average relative gain (%) vs. reference alone -- Table 1 style ===", flush=True)
+        print(table, flush=True)
+
+    if not verbose:
+        return
 
     from scipy import stats
     print("\n=== Detailed Relative Gain Breakdown (alpha=0.20) ===")
-    for ref in reference_methods:
+    for ref in ref_list:
         for pt in active_pretrain:
             combo_key = f"{ref}+{pt}"
             if ref not in results_np or combo_key not in results_np:

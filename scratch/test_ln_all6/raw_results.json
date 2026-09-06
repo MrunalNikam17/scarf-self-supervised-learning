@@ -1,0 +1,422 @@
+{
+  "control": {
+    "openml_11_balance-scale": [
+      0.89682537317276
+    ],
+    "openml_37_diabetes": [
+      0.7792207598686218
+    ],
+    "openml_54_vehicle": [
+      0.658823549747467
+    ],
+    "openml_1510_wdbc": [
+      0.9298245906829834
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8443396091461182
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "control+scarf": {
+    "openml_11_balance-scale": [
+      0.9126983880996704
+    ],
+    "openml_37_diabetes": [
+      0.7662337422370911
+    ],
+    "openml_54_vehicle": [
+      0.7235293984413147
+    ],
+    "openml_1510_wdbc": [
+      0.9298245906829834
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8679245114326477
+    ],
+    "openml_15_breast-w": [
+      0.9785714149475098
+    ]
+  },
+  "control+scarf_ae": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ],
+    "openml_37_diabetes": [
+      0.798701286315918
+    ],
+    "openml_54_vehicle": [
+      0.7411764860153198
+    ],
+    "openml_1510_wdbc": [
+      0.9736841917037964
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8726415038108826
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "dropout": {
+    "openml_11_balance-scale": [
+      0.9126983880996704
+    ],
+    "openml_37_diabetes": [
+      0.8181818127632141
+    ],
+    "openml_54_vehicle": [
+      0.7529411911964417
+    ],
+    "openml_1510_wdbc": [
+      0.9473684430122375
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8396226167678833
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "dropout+scarf": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ],
+    "openml_37_diabetes": [
+      0.8181818127632141
+    ],
+    "openml_54_vehicle": [
+      0.7117646932601929
+    ],
+    "openml_1510_wdbc": [
+      0.9210526347160339
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8537735939025879
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "dropout+scarf_ae": {
+    "openml_11_balance-scale": [
+      0.9126983880996704
+    ],
+    "openml_37_diabetes": [
+      0.8181818127632141
+    ],
+    "openml_54_vehicle": [
+      0.7411764860153198
+    ],
+    "openml_1510_wdbc": [
+      0.9736841917037964
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8537735939025879
+    ],
+    "openml_15_breast-w": [
+      0.9785714149475098
+    ]
+  },
+  "mixup": {
+    "openml_11_balance-scale": [
+      0.8888888955116272
+    ],
+    "openml_37_diabetes": [
+      0.7727272510528564
+    ],
+    "openml_54_vehicle": [
+      0.5882353186607361
+    ],
+    "openml_1510_wdbc": [
+      0.9122806787490845
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8207547068595886
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "mixup+scarf": {
+    "openml_11_balance-scale": [
+      0.9126983880996704
+    ],
+    "openml_37_diabetes": [
+      0.7467532753944397
+    ],
+    "openml_54_vehicle": [
+      0.7352941036224365
+    ],
+    "openml_1510_wdbc": [
+      0.9473684430122375
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.849056601524353
+    ],
+    "openml_15_breast-w": [
+      0.9785714149475098
+    ]
+  },
+  "mixup+scarf_ae": {
+    "openml_11_balance-scale": [
+      0.8888888955116272
+    ],
+    "openml_37_diabetes": [
+      0.7922077775001526
+    ],
+    "openml_54_vehicle": [
+      0.6823529601097107
+    ],
+    "openml_1510_wdbc": [
+      0.9385964870452881
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8301886916160583
+    ],
+    "openml_15_breast-w": [
+      0.9785714149475098
+    ]
+  },
+  "label_smooth": {
+    "openml_11_balance-scale": [
+      0.9126983880996704
+    ],
+    "openml_37_diabetes": [
+      0.798701286315918
+    ],
+    "openml_54_vehicle": [
+      0.7529411911964417
+    ],
+    "openml_1510_wdbc": [
+      0.9561403393745422
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8349056839942932
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "label_smooth+scarf": {
+    "openml_11_balance-scale": [
+      0.89682537317276
+    ],
+    "openml_37_diabetes": [
+      0.7857142686843872
+    ],
+    "openml_54_vehicle": [
+      0.7352941036224365
+    ],
+    "openml_1510_wdbc": [
+      0.9210526347160339
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8301886916160583
+    ],
+    "openml_15_breast-w": [
+      0.9785714149475098
+    ]
+  },
+  "label_smooth+scarf_ae": {
+    "openml_11_balance-scale": [
+      0.9126983880996704
+    ],
+    "openml_37_diabetes": [
+      0.7857142686843872
+    ],
+    "openml_54_vehicle": [
+      0.7588235139846802
+    ],
+    "openml_1510_wdbc": [
+      0.9561403393745422
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8396226167678833
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "distill": {
+    "openml_11_balance-scale": [
+      0.9285714030265808
+    ],
+    "openml_37_diabetes": [
+      0.7922077775001526
+    ],
+    "openml_54_vehicle": [
+      0.6117647290229797
+    ],
+    "openml_1510_wdbc": [
+      0.9561403393745422
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8679245114326477
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "distill+scarf": {
+    "openml_11_balance-scale": [
+      0.920634925365448
+    ],
+    "openml_37_diabetes": [
+      0.8181818127632141
+    ],
+    "openml_54_vehicle": [
+      0.7352941036224365
+    ],
+    "openml_1510_wdbc": [
+      0.9561403393745422
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8537735939025879
+    ],
+    "openml_15_breast-w": [
+      0.9785714149475098
+    ]
+  },
+  "distill+scarf_ae": {
+    "openml_11_balance-scale": [
+      0.8888888955116272
+    ],
+    "openml_37_diabetes": [
+      0.8181818127632141
+    ],
+    "openml_54_vehicle": [
+      0.7470588088035583
+    ],
+    "openml_1510_wdbc": [
+      0.9736841917037964
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8726415038108826
+    ],
+    "openml_15_breast-w": [
+      0.9785714149475098
+    ]
+  },
+  "deep_knn": {
+    "openml_11_balance-scale": [
+      0.9126983880996704
+    ],
+    "openml_37_diabetes": [
+      0.798701286315918
+    ],
+    "openml_54_vehicle": [
+      0.6470588445663452
+    ],
+    "openml_1510_wdbc": [
+      0.9210526347160339
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8443396091461182
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "deep_knn+scarf": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ],
+    "openml_37_diabetes": [
+      0.798701286315918
+    ],
+    "openml_54_vehicle": [
+      0.658823549747467
+    ],
+    "openml_1510_wdbc": [
+      0.9210526347160339
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8443396091461182
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "deep_knn+scarf_ae": {
+    "openml_11_balance-scale": [
+      0.89682537317276
+    ],
+    "openml_37_diabetes": [
+      0.7922077775001526
+    ],
+    "openml_54_vehicle": [
+      0.6882352828979492
+    ],
+    "openml_1510_wdbc": [
+      0.9473684430122375
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.849056601524353
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "bitempered": {
+    "openml_11_balance-scale": [
+      0.9365079402923584
+    ],
+    "openml_37_diabetes": [
+      0.8116883039474487
+    ],
+    "openml_54_vehicle": [
+      0.7235293984413147
+    ],
+    "openml_1510_wdbc": [
+      0.8947368264198303
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8207547068595886
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "bitempered+scarf": {
+    "openml_11_balance-scale": [
+      0.9365079402923584
+    ],
+    "openml_37_diabetes": [
+      0.7597402334213257
+    ],
+    "openml_54_vehicle": [
+      0.7176470756530762
+    ],
+    "openml_1510_wdbc": [
+      0.9210526347160339
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.849056601524353
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  },
+  "bitempered+scarf_ae": {
+    "openml_11_balance-scale": [
+      0.9285714030265808
+    ],
+    "openml_37_diabetes": [
+      0.8246753215789795
+    ],
+    "openml_54_vehicle": [
+      0.7176470756530762
+    ],
+    "openml_1510_wdbc": [
+      0.9736841917037964
+    ],
+    "openml_1494_qsar-biodeg": [
+      0.8679245114326477
+    ],
+    "openml_15_breast-w": [
+      0.9714285731315613
+    ]
+  }
+}

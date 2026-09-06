@@ -1,0 +1,72 @@
+{
+  "control": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ]
+  },
+  "control+scarf": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ]
+  },
+  "dropout": {
+    "openml_11_balance-scale": [
+      0.920634925365448
+    ]
+  },
+  "dropout+scarf": {
+    "openml_11_balance-scale": [
+      0.89682537317276
+    ]
+  },
+  "mixup": {
+    "openml_11_balance-scale": [
+      0.9126983880996704
+    ]
+  },
+  "mixup+scarf": {
+    "openml_11_balance-scale": [
+      0.8888888955116272
+    ]
+  },
+  "label_smooth": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ]
+  },
+  "label_smooth+scarf": {
+    "openml_11_balance-scale": [
+      0.920634925365448
+    ]
+  },
+  "distill": {
+    "openml_11_balance-scale": [
+      0.89682537317276
+    ]
+  },
+  "distill+scarf": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ]
+  },
+  "deep_knn": {
+    "openml_11_balance-scale": [
+      0.9285714030265808
+    ]
+  },
+  "deep_knn+scarf": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ]
+  },
+  "bitempered": {
+    "openml_11_balance-scale": [
+      0.9047619104385376
+    ]
+  },
+  "bitempered+scarf": {
+    "openml_11_balance-scale": [
+      0.89682537317276
+    ]
+  }
+}

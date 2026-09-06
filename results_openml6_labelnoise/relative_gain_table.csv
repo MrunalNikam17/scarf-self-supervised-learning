@@ -1,0 +1,8 @@
+,scarf,scarf_ae
+control,,
+dropout,,
+mixup,,
+label_smooth,1.5003744050334655,
+distill,3.379154202929114,
+deep_knn,,
+bitempered,,

@@ -34,7 +34,7 @@ from scarf.ablations import (
     train_co_training,
     train_data_augmentation,
 )
-from scarf.data import load_csv_dataset, preprocess_dataset
+from scarf.data import load_csv_dataset, load_openml_dataset, preprocess_dataset
 from scarf.evaluate import relative_gain, win_matrix
 from scarf.trainer import evaluate_accuracy, finetune_classifier, pretrain_scarf
 
@@ -289,11 +289,13 @@ def _summarize_and_save(results_dict, out_path, name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--n-trials", type=int, default=5)
+    parser.add_argument("--n-trials", type=int, default=3)
     parser.add_argument("--max-pretrain-epochs", type=int, default=150)
     parser.add_argument("--max-finetune-epochs", type=int, default=100)
+    parser.add_argument("--dataset-id", type=int, default=1489, help="OpenML dataset ID (default 1489 for Phonemes)")
     parser.add_argument("--output-dir", default="results_ablations")
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--sweep", default="all", help="Select specific ablation sweep, comma-separated list, or 'all'")
     args = parser.parse_args()
 
     if not os.path.isabs(args.output_dir):
@@ -301,50 +303,110 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
 
     # Pre-generate dataset splits across scalings and trials
-    print("Pre-generating dataset splits...")
+    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Pre-generating dataset splits (trials={args.n_trials})...")
     splits_dict = {"zscore": defaultdict(list), "minmax": defaultdict(list)}
-    for name, fname in DEFAULT_DATASETS.items():
-        fpath = os.path.join(DATA_DIR, fname)
-        X, y = load_csv_dataset(fpath)
+    if args.dataset_id is not None:
+        print(f"Loading OpenML dataset {args.dataset_id}...")
+        X, y, cat_mask, feat_names = load_openml_dataset(args.dataset_id)
+        dname = f"openml_{args.dataset_id}_phonemes"
         for trial in range(args.n_trials):
-            splits_dict["zscore"][name].append(preprocess_dataset(X, y, scale="zscore", random_state=trial))
-            splits_dict["minmax"][name].append(preprocess_dataset(X, y, scale="minmax", random_state=trial))
+            splits_dict["zscore"][dname].append(preprocess_dataset(X, y, cat_mask, scale="zscore", random_state=trial))
+            splits_dict["minmax"][dname].append(preprocess_dataset(X, y, cat_mask, scale="minmax", random_state=trial))
+    else:
+        for name, fname in DEFAULT_DATASETS.items():
+            fpath = os.path.join(DATA_DIR, fname)
+            X, y = load_csv_dataset(fpath)
+            for trial in range(args.n_trials):
+                splits_dict["zscore"][name].append(preprocess_dataset(X, y, scale="zscore", random_state=trial))
+                splits_dict["minmax"][name].append(preprocess_dataset(X, y, scale="minmax", random_state=trial))
 
-    all_dfs = []
+    selected = [s.strip() for s in args.sweep.split(",")]
+    run_all = ("all" in selected)
 
     # 1. Corruption strategies
-    res1 = run_corruption_ablation(splits_dict, 0, 0, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
-    all_dfs.append(_summarize_and_save(res1, os.path.join(args.output_dir, "ablation_corruptions.csv"), "corruption_strategies"))
+    if run_all or "corruption" in selected:
+        t0 = time.time()
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 1: Corruption Strategies...")
+        res1 = run_corruption_ablation(splits_dict, 0, 0, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        _summarize_and_save(res1, os.path.join(args.output_dir, "ablation_corruptions.csv"), "corruption_strategies")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 1 completed in {time.time() - t0:.2f}s")
 
     # 2. Batch size
-    res2 = run_batch_size_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
-    all_dfs.append(_summarize_and_save(res2, os.path.join(args.output_dir, "ablation_batch_size.csv"), "batch_size"))
+    if run_all or "batch_size" in selected:
+        t0 = time.time()
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 2: Batch Size...")
+        res2 = run_batch_size_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        _summarize_and_save(res2, os.path.join(args.output_dir, "ablation_batch_size.csv"), "batch_size")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 2 completed in {time.time() - t0:.2f}s")
 
     # 3. Corruption rate
-    res3 = run_corruption_rate_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
-    all_dfs.append(_summarize_and_save(res3, os.path.join(args.output_dir, "ablation_corruption_rate.csv"), "corruption_rate"))
+    if run_all or "corruption_rate" in selected:
+        t0 = time.time()
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 3: Corruption Rate...")
+        res3 = run_corruption_rate_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        _summarize_and_save(res3, os.path.join(args.output_dir, "ablation_corruption_rate.csv"), "corruption_rate")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 3 completed in {time.time() - t0:.2f}s")
 
     # 4. Temperature
-    res4 = run_temperature_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
-    all_dfs.append(_summarize_and_save(res4, os.path.join(args.output_dir, "ablation_temperature.csv"), "temperature"))
+    if run_all or "temperature" in selected:
+        t0 = time.time()
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 4: Softmax Temperature...")
+        res4 = run_temperature_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        _summarize_and_save(res4, os.path.join(args.output_dir, "ablation_temperature.csv"), "temperature")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 4 completed in {time.time() - t0:.2f}s")
 
     # 5. Losses
-    res5 = run_losses_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
-    all_dfs.append(_summarize_and_save(res5, os.path.join(args.output_dir, "ablation_losses.csv"), "alternative_losses"))
+    if run_all or "losses" in selected:
+        t0 = time.time()
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 5: Alternative Losses...")
+        res5 = run_losses_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        _summarize_and_save(res5, os.path.join(args.output_dir, "ablation_losses.csv"), "alternative_losses")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 5 completed in {time.time() - t0:.2f}s")
 
     # 6. Co-train and data augmentation
-    res6 = run_cotrain_and_aug_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
-    all_dfs.append(_summarize_and_save(res6, os.path.join(args.output_dir, "ablation_cotrain_aug.csv"), "cotrain_and_augmentation"))
+    if run_all or "cotrain_aug" in selected:
+        t0 = time.time()
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 6-7: Co-training & Data Augmentation...")
+        res6 = run_cotrain_and_aug_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        _summarize_and_save(res6, os.path.join(args.output_dir, "ablation_cotrain_aug.csv"), "cotrain_and_augmentation")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 6-7 completed in {time.time() - t0:.2f}s")
 
     # 7. Validation metric
-    res7 = run_val_metric_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
-    all_dfs.append(_summarize_and_save(res7, os.path.join(args.output_dir, "ablation_val_metric.csv"), "validation_metric"))
+    if run_all or "val_metric" in selected:
+        t0 = time.time()
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Starting Ablation 8: Validation Metric...")
+        res7 = run_val_metric_ablation(splits_dict, args.n_trials, args.device, args.max_pretrain_epochs, args.max_finetune_epochs)
+        _summarize_and_save(res7, os.path.join(args.output_dir, "ablation_val_metric.csv"), "validation_metric")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Ablation 8 completed in {time.time() - t0:.2f}s")
 
-    # Unified master summary
-    master_df = pd.concat(all_dfs, ignore_index=True)
-    master_path = os.path.join(args.output_dir, "all_ablations_summary.csv")
-    master_df.to_csv(master_path, index=False)
-    print(f"\nAll ablations completed! Saved unified summary to {master_path}")
+    # Load all existing ablation CSVs to generate unified master summary
+    csv_files = [
+        "ablation_corruptions.csv",
+        "ablation_batch_size.csv",
+        "ablation_corruption_rate.csv",
+        "ablation_temperature.csv",
+        "ablation_losses.csv",
+        "ablation_cotrain_aug.csv",
+        "ablation_val_metric.csv",
+    ]
+    master_dfs = []
+    for cf in csv_files:
+        cp = os.path.join(args.output_dir, cf)
+        if os.path.exists(cp):
+            try:
+                tdf = pd.read_csv(cp)
+                target_dname = dname if args.dataset_id is not None else None
+                if target_dname:
+                    tdf = tdf[tdf["dataset"] == target_dname]
+                if len(tdf) > 0:
+                    master_dfs.append(tdf)
+            except Exception:
+                pass
+    if master_dfs:
+        master_df = pd.concat(master_dfs, ignore_index=True)
+        master_path = os.path.join(args.output_dir, "all_ablations_summary.csv")
+        master_df.to_csv(master_path, index=False)
+        print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Completed! Saved unified master summary to {master_path}")
 
 
 if __name__ == "__main__":

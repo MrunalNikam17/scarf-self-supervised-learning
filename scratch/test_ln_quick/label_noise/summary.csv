@@ -1,0 +1,15 @@
+dataset,method,mean_acc,std_acc,n_trials
+openml_11_balance-scale,bitempered,0.9047619104385376,0.0,1
+openml_11_balance-scale,bitempered+scarf,0.89682537317276,0.0,1
+openml_11_balance-scale,control,0.9047619104385376,0.0,1
+openml_11_balance-scale,control+scarf,0.9047619104385376,0.0,1
+openml_11_balance-scale,deep_knn,0.9285714030265808,0.0,1
+openml_11_balance-scale,deep_knn+scarf,0.9047619104385376,0.0,1
+openml_11_balance-scale,distill,0.89682537317276,0.0,1
+openml_11_balance-scale,distill+scarf,0.9047619104385376,0.0,1
+openml_11_balance-scale,dropout,0.920634925365448,0.0,1
+openml_11_balance-scale,dropout+scarf,0.89682537317276,0.0,1
+openml_11_balance-scale,label_smooth,0.9047619104385376,0.0,1
+openml_11_balance-scale,label_smooth+scarf,0.920634925365448,0.0,1
+openml_11_balance-scale,mixup,0.9126983880996704,0.0,1
+openml_11_balance-scale,mixup+scarf,0.8888888955116272,0.0,1
