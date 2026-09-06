@@ -228,7 +228,7 @@ def pretrain_ablation(
 
     # Build static validation pairs (cycled 10 epochs as in paper)
     val_xs, val_xts = [], []
-    gen = torch.Generator(device="cpu").manual_seed(0)
+    gen = torch.Generator(device=x_val_t.device).manual_seed(0)
     for _ in range(10):
         xt = corrupt_view(
             x_val_t, corruption_strategy, sampler=sampler, marginal_mean=marginal_mean,

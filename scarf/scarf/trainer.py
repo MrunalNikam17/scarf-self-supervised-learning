@@ -39,7 +39,7 @@ def _build_static_val_pairs(
     static set used for InfoNCE validation loss tracking throughout
     pre-training (as described in the paper).
     """
-    gen = torch.Generator(device="cpu").manual_seed(seed)
+    gen = torch.Generator(device=x_val.device).manual_seed(seed)
     xs, xts = [], []
     for _ in range(n_epochs):
         xt = scarf_corruption(x_val, sampler, corruption_rate, generator=gen)
