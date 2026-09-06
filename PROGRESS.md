@@ -13,7 +13,7 @@ This document tracks all experimental runs, timestamps, configurations, trial co
 | **Stage 0** | Vehicle Diagnosis & Early-Stopping Investigation | OpenML ID 54 (`vehicle`), 100% and 25% labeled | 10 | Completed | `min_epochs=15` lifts accuracy for both methods (+7.6 to +7.9 pp) by eliminating 4-epoch collapses, but does not close the gap. `scarf_ae` consistently hurts Vehicle worse than plain `scarf` across almost all reference baselines (e.g. `dropout+scarf_ae`: -29.10%, p=0.0001; `control+scarf_ae`: -16.17%, p=0.0071). |
 | **Stage 1** | Label-Noise Benchmark (`results_openml6_labelnoise`) | OpenML 6 datasets, 30% label noise, 7 reference x 3 pretrain methods | 15 | Completed (2026-09-05 18:01:54) | Mostly inconclusive: 12 of 14 Table-1 cells are NaN (0/6 datasets pass p < 0.20 filter). Only `label_smooth+scarf` (+1.50%, driven solely by qsar-biodeg) and `distill+scarf` (+3.38%, driven solely by vehicle) pass the filter; no evidence of harm, but weak evidence of general benefit at 6-dataset scale. |
 | **Stage 2** | Extended Baselines Benchmark (`results_openml6_semisup`) | Semi-supervised extended: 7 reference (`control, dropout, mixup, label_smooth, distill, self_train, tri_train`) x 3 pretrain methods on 6 OpenML datasets | 15 (5 for tri_train\*) | Completed (2026-09-05 18:17:08) | Highly polarized by dataset: Strong positive transfer on QSAR-biodeg (+10% to +21%, p < 0.01) and modest gains on diabetes/balance-scale, but Vehicle consistently suffers severe negative transfer (-12% to -29%, p < 0.01). Tri-training confirmed to plateau by iteration 4. |
-| **Stage 3** | Ablation Suite (`results_ablations`) | Phonemes (OpenML ID 1489, 5,404 rows), Appendix Figures 5–11 | 3 | Completed locally for Ablation 1 (696.5s); remaining sweeps prepped for Colab GPU | Ablation 1 matches paper: z-score systematically beats min-max; marginal sampling beats mean, joint, and no-corruption. Local 4-dataset sweeps confirm corruption sweet spot (50–80%), tau=1.0 optimality, and strong failure of data-augmentation-only. |
+| **Stage 3** | Ablation Suite (`results_ablations`) | Phonemes (OpenML ID 1489, 5,404 rows), Appendix Figures 5–11 | 3 | Ablation 1 completed (696.5s); Sweeps 2–8 pending Colab GPU | Ablation 1 on Phonemes confirms marginal sampling outperforms mean, joint, and no-corruption, and z-score beats min-max. Sweeps 2–8 pending execution on Colab GPU. |
 | **Stage 4/5** | Final Documentation & README Rewrite | End-to-end rewrite of `README.md` | - | Completed | Full codebase, baselines, empirical tables, corrected vehicle framing, limitations, and Google Colab execution guide documented. |
 
 \* *Caveat: `tri_train` runs are based on n=5 trials due to 3-model iteration costs, while all other baselines are based on n=15 trials.*
@@ -75,65 +75,17 @@ Executed on 2026-09-06 (11:28:11 to 11:39:47):
 | `joint_minmax` | min-max | 0.826864 | 0.002426 | Lowest among corruptions |
 | `none_minmax` | min-max | 0.823167 | 0.004549 | Lowest overall |
 
-#### Ablation 2: Batch Size Sweep Summary (Local Benchmark, 3 Trials)
+---
 
-| Batch Size | Glass | Pima-Diabetes | Sonar | Wine |
-| :---: | :---: | :---: | :---: | :---: |
-| **4** | 0.545 ± 0.085 | 0.781 ± 0.011 | 0.738 ± 0.058 | 0.935 ± 0.047 |
-| **16** | 0.561 ± 0.119 | 0.768 ± 0.006 | 0.754 ± 0.096 | 0.944 ± 0.060 |
-| **64** | 0.545 ± 0.049 | 0.760 ± 0.014 | 0.786 ± 0.034 | 0.889 ± 0.060 |
-| **128** | 0.462 ± 0.156 | 0.768 ± 0.024 | 0.802 ± 0.079 | 0.880 ± 0.047 |
-| **256** | 0.561 ± 0.070 | 0.775 ± 0.037 | 0.690 ± 0.039 | 0.907 ± 0.013 |
-| **512** | 0.598 ± 0.039 | 0.784 ± 0.025 | 0.833 ± 0.039 | 0.935 ± 0.052 |
+### 3. Ablations 2–8: Pending Execution on Google Colab GPU
 
-#### Ablation 3: Corruption Rate Sweep (0.1 to 0.9, 3 Trials)
+The remaining ablation sweeps on Phonemes (OpenML ID 1489, 5,404 rows, 3 trials) require significant compute and are **pending execution on Google Colab GPU**:
 
-- **Peak Performance Range**: Consistently observed between 50% and 80% corruption rate:
-  - Sonar: peaks at 0.817 (rate 50% and rate 80%).
-  - Glass: peaks at 0.705 (rate 80%).
-  - Pima-Diabetes: peaks at 0.786 (rate 30%) and 0.779 (rate 70%).
-  - Wine: peaks at 0.981 (rate 30%) and 0.972 (rate 50%).
-- Matches the paper's Appendix B conclusion that SCARF is robust across a wide 50%–80% corruption band.
+- **Ablation 2: Batch Size Sweep** $\{4, 16, 64, 128, 256, 512\}$ — *Pending Colab run*
+- **Ablation 3: Corruption Rate Sweep** (10% to 90% in steps of 10%) — *Pending Colab run*
+- **Ablation 4: Softmax Temperature Sweep** $\{0.01, 0.1, 1.0, 10.0\}$ — *Pending Colab run*
+- **Ablation 5: Alternative Loss Objectives** (InfoNCE vs. Barlow Twins vs. Alignment & Uniformity) — *Pending Colab run*
+- **Ablations 6 & 7: Pre-Training vs. Co-Training vs. Data Augmentation** — *Pending Colab run*
+- **Ablation 8: Validation Metric for Early Stopping** (InfoNCE Loss vs. InfoNCE Error) — *Pending Colab run*
 
-#### Ablation 4: Softmax Temperature Sweep (3 Trials)
-
-| Temperature $\tau$ | Glass | Pima-Diabetes | Sonar | Wine |
-| :---: | :---: | :---: | :---: | :---: |
-| **0.01** | 0.614 ± 0.113 | 0.760 ± 0.009 | 0.746 ± 0.062 | 0.963 ± 0.052 |
-| **0.1** | 0.583 ± 0.011 | 0.745 ± 0.020 | 0.778 ± 0.040 | 0.972 ± 0.023 |
-| **1.0** | 0.439 ± 0.070 | 0.784 ± 0.008 | 0.817 ± 0.092 | 0.926 ± 0.013 |
-| **10.0** | 0.470 ± 0.028 | 0.753 ± 0.048 | 0.730 ± 0.129 | 0.935 ± 0.035 |
-
-- $\tau=1.0$ yields optimal or near-optimal results on non-trivial datasets (Sonar, Diabetes); extreme temperature $\tau=10.0$ collapses representation quality.
-
-#### Ablation 5: Alternative Losses (InfoNCE vs. Barlow Twins vs. Align+Uniform)
-
-| Loss Function | Glass | Pima-Diabetes | Sonar | Wine |
-| :--- | :---: | :---: | :---: | :---: |
-| **InfoNCE** ($\tau=1.0$) | 0.553 ± 0.077 | 0.775 ± 0.041 | 0.810 ± 0.039 | 0.926 ± 0.013 |
-| **Barlow Twins** ($\lambda=5\times 10^{-3}$) | 0.523 ± 0.032 | 0.762 ± 0.011 | 0.825 ± 0.056 | 0.972 ± 0.023 |
-| **Align + Uniform** ($t=2$) | 0.576 ± 0.021 | 0.771 ± 0.024 | 0.738 ± 0.034 | 0.963 ± 0.013 |
-
-- All three contrastive losses perform within a narrow margin of each other, confirming the paper's assertion that the marginal-sampling pretext task is the primary driver of quality rather than the specific contrastive loss formulation.
-
-#### Ablation 6 & 7: Pre-Training vs. Co-Training vs. Data Augmentation
-
-| Paradigm | Glass | Pima-Diabetes | Sonar | Wine |
-| :--- | :---: | :---: | :---: | :---: |
-| **Supervised Control** | 0.591 ± 0.032 | 0.760 ± 0.016 | 0.738 ± 0.089 | 0.981 ± 0.026 |
-| **Pre-trained SCARF** | 0.561 ± 0.088 | 0.742 ± 0.022 | 0.770 ± 0.022 | 0.963 ± 0.026 |
-| **Co-train ($\lambda=0.01$)** | 0.477 ± 0.170 | 0.764 ± 0.022 | 0.817 ± 0.030 | 0.972 ± 0.023 |
-| **Co-train ($\lambda=0.1$)** | 0.523 ± 0.113 | 0.768 ± 0.013 | 0.770 ± 0.096 | 0.991 ± 0.013 |
-| **Co-train ($\lambda=1.0$)** | 0.538 ± 0.057 | 0.790 ± 0.021 | 0.730 ± 0.030 | 0.954 ± 0.026 |
-| **Data Augmentation Only** | **0.348 ± 0.011** | **0.747 ± 0.032** | **0.706 ± 0.030** | **0.861 ± 0.142** |
-
-- **Decisive Validation of Paper Figure 10**: Data Augmentation alone *severely degrades* classification performance across every single dataset (dropping to 0.348 on Glass and 0.706 on Sonar). Self-supervised pre-training is essential; feature corruption is ineffective as direct supervised data augmentation.
-
-#### Ablation 8: Validation Metric for Early Stopping (Loss vs. Error)
-
-| Metric | Glass | Pima-Diabetes | Sonar | Wine |
-| :--- | :---: | :---: | :---: | :---: |
-| **InfoNCE Validation Loss** | 0.500 ± 0.067 | 0.779 ± 0.028 | 0.730 ± 0.081 | 0.944 ± 0.023 |
-| **InfoNCE Error (argmax)** | 0.561 ± 0.086 | 0.751 ± 0.027 | 0.802 ± 0.040 | 0.926 ± 0.065 |
-
-- Both metrics track closely; early stopping on InfoNCE validation loss is slightly more stable on smaller feature sets, while InfoNCE error shows strong results on Sonar.
+*Note: Previous CSV files in `results_ablations/` for sweeps 2–8 were historical test artifacts on small local CSVs (Glass, Diabetes, Sonar, Wine) dated 2026-09-03, not the instructed Phonemes (OpenML 1489) benchmark. All numbers have been removed to maintain documentation integrity until the real Colab GPU run is performed.*

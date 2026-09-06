@@ -24,13 +24,13 @@ This repository implements the full SCARF method, all pre-training variants, all
   - **Discriminative SCARF**: Binary classification pretext task predicting whether each sample is real or corrupted.
 - **Reference Methods** ([`scarf/experiment_runner.py`](file:///c:/Users/mruna/Downloads/scarf_project/scarf/scarf/experiment_runner.py)):
   - **Control**: Supervised MLP baseline trained from random initialization.
-  - **Dropout**: Feature and activation dropout ($p=0.10$).
+  - **Dropout**: Feature and activation dropout ($p=0.04$).
   - **Mixup**: Convex linear interpolation ($\alpha=0.20$) of input features and one-hot targets.
   - **Label Smoothing**: Softened target distributions ($\epsilon=0.10$).
   - **Self-Distillation**: Teacher-student knowledge distillation ($T=2.0$, $\alpha=0.5$).
-  - **Self-Training**: Confidence-thresholded pseudo-labeling on unlabeled data ($\tau_{\text{conf}}=0.80$, $\alpha_{\text{unlabel}}=0.5$).
+  - **Self-Training**: Confidence-thresholded pseudo-labeling on unlabeled data ($\tau_{\text{conf}}=0.75$, 10 iterations).
   - **Tri-Training**: 3-model majority-voting disagreement pseudo-labeling for tabular semi-supervised learning.
-  - **Deep k-NN**: Non-parametric k-nearest neighbors classification over learned encoder representations ($k=5$).
+  - **Deep k-NN**: Non-parametric k-nearest neighbors classification over learned encoder representations ($k=50$).
   - **Bi-Tempered Loss**: Robust heavy-tailed loss for label noise ($t_1=0.8, t_2=1.2$).
 
 ### 3. Complete Ablation Suite
@@ -58,8 +58,8 @@ Experiments were evaluated across 6 diverse OpenML-CC18 benchmark datasets match
 
 Evaluation methodology strictly adheres to Section 4:
 - **Win Matrix**: Pairwise Welch's two-sample t-test ($p < 0.05$).
-- **Relative Gain Table**: Dataset-aggregated relative gain filtered at $p < 0.20$ significance threshold:
-$$\text{RelGain}(M, M_0) = \frac{\text{Acc}(M) - \text{Acc}(M_0)}{1 - \text{Acc}(M_0)}$$
+- **Relative Gain Table**: Dataset-aggregated relative percent gain filtered at $p < 0.20$ significance threshold:
+$$\text{RelGain}(M, M_0) = 100 \times \frac{\text{Acc}(M) - \text{Acc}(M_0)}{\text{Acc}(M_0)}$$
 
 ---
 
@@ -151,20 +151,18 @@ Ablations were evaluated on Phonemes (OpenML 1489, 5,404 rows) and local benchma
 1. **Feature scaling is critical**: z-score scaling systematically outperforms min-max scaling across every single corruption strategy (+1.5 to +3.6 percentage points).
 2. **Marginal sampling beats baselines**: Marginal sampling reliably beats no corruption (+0.52 pp) and joint sampling (+1.04 pp), qualitatively replicating the paper's Section 4.4 conclusions. Learnable missing-feature embedding is also effective (+0.44 pp over marginal).
 
-### Ablation 2–8 Findings Summary
+### Ablations 2–8: Pending Execution on Google Colab GPU
 
-- **Batch Size Sweep** $\{4, 16, 64, 128, 256, 512\}$:
-  - Contrastive learning requires sufficient negative pairs: larger batch sizes (128–512) show stable performance (0.80–0.83 on sonar, 0.77–0.78 on diabetes), whereas tiny batches ($B=4$) suffer from higher variance and slower convergence.
-- **Corruption Rate Sweep** (10% to 90%):
-  - **Matches Paper Sweet Spot**: Accuracies peak in the 50%–80% corruption range (e.g., sonar reaches 0.817 at 50% and 80%; glass reaches 0.705 at 80%). Extreme low (10%) and extreme high (90%) corruption show noticeable drops.
-- **Softmax Temperature Sweep** $\{0.01, 0.1, 1.0, 10.0\}$:
-  - $\tau=1.0$ is near-optimal. Extreme temperatures ($\tau=10.0$) severely degrade representation quality (e.g., sonar drops from 0.817 to 0.730; glass drops from 0.583 to 0.470).
-- **Alternative Loss Objectives**:
-  - InfoNCE, Barlow Twins ($\lambda=5\times 10^{-3}$), and Alignment & Uniformity ($t=2$) perform comparably across datasets (diabetes: 0.775 vs. 0.762 vs. 0.771; sonar: 0.810 vs. 0.825 vs. 0.738). Barlow Twins is a viable alternative, but InfoNCE remains the most consistent.
-- **Pre-Training vs. Data Augmentation**:
-  - **Strong Paper Match (Figure 10)**: Applying SCARF corruption as online data augmentation during supervised training *without* contrastive pre-training severely harms performance across all datasets (glass: 0.348 vs. 0.561 pretrain; sonar: 0.706 vs. 0.770 pretrain; wine: 0.861 vs. 0.963 pretrain). This conclusively validates that pre-training contrastive representations is necessary; corruption is not merely acting as data augmentation.
-- **Validation Metric for Early Stopping**:
-  - Early stopping on InfoNCE validation loss vs. InfoNCE error (off-diagonal classification error) yields equivalent results within sampling variance (diabetes: 0.779 vs. 0.751; sonar: 0.730 vs. 0.802).
+The remaining ablation sweeps on Phonemes (OpenML ID 1489, 5,404 rows, 3 trials) require significant compute and are **pending execution on Google Colab GPU**:
+
+- **Ablation 2: Batch Size Sweep** $\{4, 16, 64, 128, 256, 512\}$ — *Pending Colab run*
+- **Ablation 3: Corruption Rate Sweep** (10% to 90% in steps of 10%) — *Pending Colab run*
+- **Ablation 4: Softmax Temperature Sweep** $\{0.01, 0.1, 1.0, 10.0\}$ — *Pending Colab run*
+- **Ablation 5: Alternative Loss Objectives** (InfoNCE vs. Barlow Twins vs. Alignment & Uniformity) — *Pending Colab run*
+- **Ablations 6 & 7: Pre-Training vs. Co-Training vs. Data Augmentation** — *Pending Colab run*
+- **Ablation 8: Validation Metric for Early Stopping** (InfoNCE Loss vs. InfoNCE Error) — *Pending Colab run*
+
+Once executed on Colab using the command in the next section, the resulting CSV files (`ablation_batch_size.csv`, `ablation_corruption_rate.csv`, etc.) will provide the empirical Phonemes numbers to populate this section.
 
 ---
 
