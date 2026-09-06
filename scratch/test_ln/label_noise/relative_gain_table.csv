@@ -1,8 +1,0 @@
-,scarf,scarf_ae,no_noise_ae,add_noise_ae,scarf_disc
-control,,,,,
-dropout,,,,,
-mixup,,,,,
-label_smooth,,,,,
-distill,,,,,
-deep_knn,,,,,
-bitempered,,,,,

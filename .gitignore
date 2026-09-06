@@ -1,0 +1,13 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing caches
+.pytest_cache/
+
+# Scratch & temporary exploration directory
+scratch/
+
+# Backup directories
+*_backup/
